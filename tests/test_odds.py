@@ -5,7 +5,7 @@ from scipy.special import beta
 
 import pytest
 
-from savi.odds import compute_all_S, pexp, mBeta
+from savi.odds import compute_all_S, pexp, mBeta, compute_odds, compute_odds_recursively
 
 
 @pytest.fixture
@@ -45,13 +45,16 @@ def um_S(uniform_multinomial_x: np.ndarray) -> np.ndarray:
     )
 
 
-def test_pexp(
-    rng: npr.Generator, n_samples: int, n_dims: int, uniform_multinomial_x: np.ndarray
-):
+@pytest.fixture
+def theta(rng: npr.Generator, n_samples: int, n_dims: int):
+    """A sample of theta."""
+    return rng.random((n_samples, n_dims))
+
+
+def test_pexp(theta: np.ndarray, uniform_multinomial_x: np.ndarray):
     """Test that pexp works in 1D and 2D."""
     # Try different sizes
     # Sample theta0s and xn arrays
-    theta = rng.random((n_samples, n_dims))
     xs = uniform_multinomial_x
 
     # Normalize theta
