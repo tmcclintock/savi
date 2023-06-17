@@ -17,7 +17,7 @@ def compute_all_S(x: np.ndarray) -> np.ndarray:
     """
     return np.cumsum(
         a=x,
-        axis=1,
+        axis=0,
     )
 
 

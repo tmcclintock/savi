@@ -5,7 +5,7 @@ from scipy.special import beta
 
 import pytest
 
-from savi.odds import pexp, mBeta
+from savi.odds import compute_all_S, pexp, mBeta
 
 
 @pytest.fixture
@@ -89,3 +89,12 @@ def test_mBeta():
     ours = mBeta(v[:2])
     scipys = beta(a, b)
     assert ours == scipys
+
+
+def test_compute_all_S():
+    """Test that we compute S correctly."""
+    x = np.arange(6).reshape(2, 3)
+
+    S = compute_all_S(x)
+    answer = np.array([[0, 1, 2], [3, 5, 7]])
+    np.testing.assert_array_equal(S, answer)
