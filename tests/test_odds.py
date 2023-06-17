@@ -1,10 +1,11 @@
 """Tests of the core odds functions."""
 import numpy as np
 import numpy.random as npr
+from scipy.special import beta
 
 import pytest
 
-from savi.odds import pexp
+from savi.odds import pexp, mBeta
 
 
 @pytest.fixture
@@ -36,6 +37,14 @@ def uniform_multinomial_x(n_samples: int, n_dims) -> np.ndarray:
     return a
 
 
+@pytest.fixture
+def um_S(uniform_multinomial_x: np.ndarray) -> np.ndarray:
+    return np.cumsum(
+        a=uniform_multinomial_x,
+        axis=1,
+    )
+
+
 def test_pexp(
     rng: npr.Generator, n_samples: int, n_dims: int, uniform_multinomial_x: np.ndarray
 ):
@@ -59,3 +68,24 @@ def test_pexp(
     pexp_values_2d = pexp(theta, xs)
 
     np.testing.assert_array_equal(pexp_values_1d, pexp_values_2d)
+
+
+def test_pexp_deterministic():
+    """Test pexp with specific values."""
+    answer = 0.6**1 * 0.25**2 * 0.15**4
+    theta = np.array([0.6, 0.25, 0.15])
+    x = np.array([1, 2, 4])
+    assert answer == pexp(theta, x)
+
+
+def test_mBeta():
+    """Test of the multivariate beta function."""
+    v = np.array([0.1, 0.5, 0.399, 0.001])
+    answer = mBeta(v)
+    assert answer >= 0
+
+    # Check against the actual beta function
+    a, b = v[:2]
+    ours = mBeta(v[:2])
+    scipys = beta(a, b)
+    assert ours == scipys
