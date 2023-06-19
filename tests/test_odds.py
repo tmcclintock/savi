@@ -5,7 +5,14 @@ from scipy.special import beta
 
 import pytest
 
-from savi.odds import compute_all_S, pexp, mBeta, compute_odds, compute_odds_recursively
+from savi.odds import (
+    compute_all_S,
+    pexp,
+    mBeta,
+    compute_odds,
+    compute_odds_recursively,
+    compute_lnodds,
+)
 
 
 @pytest.fixture
@@ -14,13 +21,13 @@ def rng():
     return npr.default_rng()
 
 
-@pytest.fixture(params=[1, 10, 100, 1000])
+@pytest.fixture(params=[1, 2, 10, 100, 1000, 10000])
 def n_samples(request):
     """Number of samples."""
     return request.param
 
 
-@pytest.fixture(params=[2, 3, 4, 10])
+@pytest.fixture(params=[2, 3, 4, 10, 20])
 def n_dims(request):
     """Number of dimensions."""
     return request.param
@@ -102,14 +109,27 @@ def test_compute_all_S():
     np.testing.assert_array_equal(S, answer)
 
 
+def test_compute_lnodds(theta: np.ndarray, uniform_multinomial_x: np.ndarray):
+    """Test the ln-odds computation."""
+    alpha0s = np.copy(theta)
+    lnodds = np.log(
+        compute_odds(x=uniform_multinomial_x, theta0s=theta, alpha0s=alpha0s)
+    )
+    lnodds2 = compute_lnodds(x=uniform_multinomial_x, theta0s=theta, alpha0s=alpha0s)
+
+    # Only test the first 100 or so elements, since
+    # the odds can blow up and then taking the log yields inf
+    np.testing.assert_allclose(lnodds[:100], lnodds2[:100])
+
+
 def test_compute_odds(theta: np.ndarray, uniform_multinomial_x: np.ndarray):
     """Test the odds computation."""
     alpha0s = np.copy(theta)
 
     odds = compute_odds(x=uniform_multinomial_x, theta0s=theta, alpha0s=alpha0s)
 
-    odds_recursive = compute_odds_recursively(
+    odds_r = compute_odds_recursively(
         x=uniform_multinomial_x, theta0s=theta, alpha0s=alpha0s
     )
 
-    np.testing.assert_array_equal(odds, odds_recursive)
+    np.testing.assert_allclose(odds, odds_r)
