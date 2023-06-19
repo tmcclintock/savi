@@ -48,7 +48,9 @@ def um_S(uniform_multinomial_x: np.ndarray) -> np.ndarray:
 @pytest.fixture
 def theta(rng: npr.Generator, n_samples: int, n_dims: int):
     """A sample of theta."""
-    return rng.random((n_samples, n_dims))
+    th = rng.random((n_dims))
+    # Normalize and return
+    return th / np.sum(th, axis=-1, keepdims=True)
 
 
 def test_pexp(theta: np.ndarray, uniform_multinomial_x: np.ndarray):
@@ -57,11 +59,8 @@ def test_pexp(theta: np.ndarray, uniform_multinomial_x: np.ndarray):
     # Sample theta0s and xn arrays
     xs = uniform_multinomial_x
 
-    # Normalize theta
-    theta = theta / np.sum(theta, axis=1, keepdims=True)
-
     # Loop over each and test
-    pexp_values_1d = np.array([pexp(t, x) for t, x in zip(theta, xs)])
+    pexp_values_1d = np.array([pexp(theta, x) for x in xs])
     # Check bounds
     assert all(pexp_values_1d >= 0)
     assert all(pexp_values_1d <= 1)
@@ -70,6 +69,8 @@ def test_pexp(theta: np.ndarray, uniform_multinomial_x: np.ndarray):
     # Now do them all at once
     pexp_values_2d = pexp(theta, xs)
 
+    print(pexp_values_1d)
+    print(pexp_values_2d)
     np.testing.assert_array_equal(pexp_values_1d, pexp_values_2d)
 
 
@@ -101,3 +102,16 @@ def test_compute_all_S():
     S = compute_all_S(x)
     answer = np.array([[0, 1, 2], [3, 5, 7]])
     np.testing.assert_array_equal(S, answer)
+
+
+def test_compute_odds(theta: np.ndarray, uniform_multinomial_x: np.ndarray):
+    """Test the odds computation."""
+    alpha0s = np.copy(theta)
+
+    odds = compute_odds(x=uniform_multinomial_x, theta0s=theta, alpha0s=alpha0s)
+
+    odds_recursive = compute_odds_recursively(
+        x=uniform_multinomial_x, theta0s=theta, alpha0s=alpha0s
+    )
+
+    np.testing.assert_array_equal(odds, odds_recursive)
