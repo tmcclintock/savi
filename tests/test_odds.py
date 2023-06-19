@@ -69,8 +69,6 @@ def test_pexp(theta: np.ndarray, uniform_multinomial_x: np.ndarray):
     # Now do them all at once
     pexp_values_2d = pexp(theta, xs)
 
-    print(pexp_values_1d)
-    print(pexp_values_2d)
     np.testing.assert_array_equal(pexp_values_1d, pexp_values_2d)
 
 
