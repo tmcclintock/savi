@@ -187,3 +187,24 @@ def compute_sequential_p(odds: np.ndarray) -> np.ndarray:
         pvalues[i] = min(pvalues[i - 1], inv_odds[i])
 
     return pvalues
+
+
+def compute_js(
+    u: float,
+    x: np.ndarray,
+    theta0s: np.ndarray,
+    alpha0s: np.ndarray,
+    n_samples: int = 1000000,
+) -> np.ndarray:
+    """Compute the confidence intervals."""
+    # Checks
+    assert 0 < u <= 1
+    assert n_samples > 0
+
+    # Compute log-odds for the current sample
+    lnodds = compute_lnodds(x=x, alpha0s=alpha0s, theta0s=theta0s)
+
+    # Sample thetas all over the symplex
+    n_dim = np.shape(x)[-1]
+    thetas = np.random.rand(n_samples, n_dim)
+    thetas = thetas / np.sum(thetas, axis=-1, keepdims=True)
